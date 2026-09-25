@@ -15,7 +15,12 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+    if (!origin || 
+        allowedOrigins.includes(origin) || 
+        origin.startsWith('http://localhost:') || 
+        origin.startsWith('http://127.0.0.1:') ||
+        (origin.includes('portfolio-frontend') && origin.endsWith('.vercel.app')) ||
+        (origin.includes('portfolio-crm') && origin.endsWith('.vercel.app'))) {
       callback(null, true);
     } else {
       console.error(`CORS blocked request from origin: ${origin}`);
