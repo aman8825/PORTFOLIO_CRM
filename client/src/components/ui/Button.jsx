@@ -6,6 +6,7 @@ export const Button = ({
   variant = 'primary', 
   size = 'md', 
   loading = false, 
+  loadingText,
   disabled = false, 
   className = '',
   type = 'button',
@@ -31,7 +32,7 @@ export const Button = ({
   return (
     <button type={type} className={combinedStyles} disabled={disabled || loading} {...props}>
       {loading && <Loader2 size={size === 'sm' ? 14 : 16} className="animate-spin" />}
-      {!loading && children}
+      {loading && loadingText ? loadingText : (!loading || !loadingText ? children : null)}
     </button>
   );
 };
