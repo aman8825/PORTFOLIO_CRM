@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Filter, Archive, Trash2, Mail, MailOpen, Clock, AlertCircle } from 'lucide-react';
+import { Search, Filter, Archive, Trash2, Mail, MailOpen, Clock, AlertCircle, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ReplyComposer from '../components/ReplyComposer';
 
@@ -38,15 +38,15 @@ const Messages = () => {
     fetchMessages(search);
   };
 
-  const updateStatus = async (id, newStatus) => {
+  const updateMessage = async (id, updateData) => {
     try {
-      await axios.patch(`/messages/${id}`, { status: newStatus });
-      fetchMessages(); // Refresh list
+      await axios.patch(`/messages/${id}`, updateData);
+      setMessages(messages.map(m => m._id === id ? { ...m, ...updateData } : m));
       if (selectedMessage && selectedMessage._id === id) {
-        setSelectedMessage({ ...selectedMessage, status: newStatus });
+        setSelectedMessage({ ...selectedMessage, ...updateData });
       }
     } catch (error) {
-      console.error('Failed to update status', error);
+      console.error('Failed to update message', error);
     }
   };
 
@@ -117,17 +117,20 @@ const Messages = () => {
                   key={msg._id}
                   onClick={() => {
                     setSelectedMessage(msg);
-                    if (msg.status === 'unread') updateStatus(msg._id, 'read');
+                    if (msg.status === 'unread') updateMessage(msg._id, { status: 'read' });
                   }}
                   className={`p-4 cursor-pointer hover:bg-slate-800/50 transition-colors ${selectedMessage?._id === msg._id ? 'bg-slate-800 border-l-2 border-primary' : 'border-l-2 border-transparent'}`}
                 >
-                  <div className="flex justify-between items-start mb-1">
-                    <span className={`font-medium truncate pr-4 ${msg.status === 'unread' ? 'text-white' : 'text-slate-300'}`}>
+                  <div className="flex justify-between items-start mb-1 gap-2">
+                    <span className={`font-medium truncate ${msg.status === 'unread' ? 'text-white' : 'text-slate-300'}`}>
                       {msg.name}
                     </span>
-                    <span className="text-xs text-slate-500 whitespace-nowrap">
-                      {new Date(msg.createdAt).toLocaleDateString()}
-                    </span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {msg.starred && <Star size={14} className="text-amber-400 fill-amber-400" />}
+                      <span className="text-xs text-slate-500 whitespace-nowrap">
+                        {new Date(msg.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
                   <p className={`text-sm mb-1 truncate ${msg.status === 'unread' ? 'text-slate-200 font-medium' : 'text-slate-400'}`}>
                     {msg.subject}
@@ -163,7 +166,14 @@ const Messages = () => {
               </div>
               <div className="flex items-center gap-2">
                 <button 
-                  onClick={() => updateStatus(selectedMessage._id, selectedMessage.status === 'archived' ? 'read' : 'archived')}
+                  onClick={(e) => { e.stopPropagation(); updateMessage(selectedMessage._id, { starred: !selectedMessage.starred }); }}
+                  className={`p-2 rounded-lg transition-colors ${selectedMessage.starred ? 'text-amber-400 hover:bg-amber-400/10' : 'text-slate-400 hover:text-amber-400 hover:bg-slate-700'}`}
+                  title={selectedMessage.starred ? "Unstar" : "Star"}
+                >
+                  <Star size={18} className={selectedMessage.starred ? "fill-amber-400" : ""} />
+                </button>
+                <button 
+                  onClick={() => updateMessage(selectedMessage._id, { status: selectedMessage.status === 'archived' ? 'read' : 'archived' })}
                   className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
                   title={selectedMessage.status === 'archived' ? "Unarchive" : "Archive"}
                 >

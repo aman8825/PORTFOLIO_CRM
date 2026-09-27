@@ -1,5 +1,6 @@
 const Admin = require('../models/Admin');
 const jwt = require('jsonwebtoken');
+const { logActivity } = require('../services/activityLogger');
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -58,6 +59,8 @@ exports.login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
+    req.admin = admin; // For logActivity to have actor context
+    await logActivity(req, 'LOGIN', 'Admin', 'Admin logged in');
     sendTokenResponse(admin, 200, res);
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error', error: error.message });
@@ -74,6 +77,8 @@ exports.logout = async (req, res) => {
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict'
   });
+
+  await logActivity(req, 'LOGOUT', 'Admin', 'Admin logged out');
 
   res.status(200).json({
     success: true,

@@ -17,7 +17,8 @@ const messageSchema = new mongoose.Schema({
   },
   repliedAt: Date,
   replyCount: { type: Number, default: 0 },
-  replies: [replySchema]
+  replies: [replySchema],
+  starred: { type: Boolean, default: false }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Message', messageSchema);

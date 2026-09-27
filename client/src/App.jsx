@@ -15,7 +15,10 @@ import Achievements from './pages/Achievements';
 import Tasks from './pages/Tasks';
 import Resume from './pages/Resume';
 import Settings from './pages/Settings';
+import ActivityLogs from './pages/ActivityLogs';
 import AiAssistant from './pages/AiAssistant';
+import Analytics from './pages/Analytics';
+import Articles from './pages/Articles';
 
 function App() {
   return (
@@ -42,7 +45,10 @@ function App() {
             <Route path="tasks" element={<Tasks />} />
             <Route path="resume" element={<Resume />} />
             <Route path="messages" element={<Messages />} />
+            <Route path="articles" element={<Articles />} />
             <Route path="assistant" element={<AiAssistant />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="activity" element={<ActivityLogs />} />
             <Route path="settings" element={<Settings />} />
           </Route>
 

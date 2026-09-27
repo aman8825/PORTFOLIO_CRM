@@ -14,6 +14,12 @@ router.use('/settings', require('./api/settings'));
 router.use('/uploads', require('./api/uploads'));
 router.use('/assistant', require('./api/assistant'));
 router.use('/tasks', require('./api/tasks'));
+router.use('/dashboard', require('./api/dashboard'));
+router.use('/analytics', require('./api/analytics'));
+router.use('/activity', require('./api/activity'));
+router.use('/backup', require('./api/backup'));
+router.use('/articles', require('./api/articles'));
+router.use('/team', require('./api/team'));
 
 router.get('/health', (req, res) => {
   res.status(200).json({ status: 'API is healthy' });

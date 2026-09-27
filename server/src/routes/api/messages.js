@@ -6,7 +6,7 @@ const {
   createMessage,
   getMessages,
   getMessageById,
-  updateMessageStatus,
+  updateMessage,
   deleteMessage,
   replyToMessage
 } = require('../../controllers/messagesController');
@@ -25,7 +25,7 @@ router.post('/', messageSubmitLimiter, createMessage);
 router.use(protect);
 router.get('/', getMessages);
 router.get('/:id', getMessageById);
-router.patch('/:id', updateMessageStatus);
+router.patch('/:id', updateMessage);
 router.delete('/:id', deleteMessage);
 router.post('/:id/reply', replyToMessage);
 

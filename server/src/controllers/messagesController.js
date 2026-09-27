@@ -1,5 +1,5 @@
 const Message = require('../models/Message');
-const { sendAdminNotification, sendReplyToVisitor } = require('../services/emailService');
+const { sendAdminNotification, sendReplyToVisitor, sendAutoReplyToVisitor } = require('../services/emailService');
 
 // @desc    Create a new contact message
 // @route   POST /api/messages
@@ -21,8 +21,9 @@ exports.createMessage = async (req, res) => {
       status: 'unread'
     });
 
-    // Fire & forget email notification
+    // Fire & forget email notifications
     sendAdminNotification(newMessage).catch(err => console.error(err));
+    sendAutoReplyToVisitor(email, name).catch(err => console.error(err));
 
     res.status(201).json({
       success: true,
@@ -88,20 +89,28 @@ exports.getMessageById = async (req, res) => {
   }
 };
 
-// @desc    Update message status
+// @desc    Update message (status, starred)
 // @route   PATCH /api/messages/:id
 // @access  Private (Admin)
-exports.updateMessageStatus = async (req, res) => {
+exports.updateMessage = async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, starred } = req.body;
     
-    if (!['unread', 'read', 'replied', 'archived'].includes(status)) {
-      return res.status(400).json({ success: false, message: 'Invalid status' });
+    let updateFields = {};
+    if (status) {
+      if (!['unread', 'read', 'replied', 'archived'].includes(status)) {
+        return res.status(400).json({ success: false, message: 'Invalid status' });
+      }
+      updateFields.status = status;
+    }
+    
+    if (starred !== undefined) {
+      updateFields.starred = starred;
     }
 
     const message = await Message.findByIdAndUpdate(
       req.params.id,
-      { status },
+      updateFields,
       { new: true, runValidators: true }
     );
 

@@ -79,4 +79,21 @@ export const updateTask = (id, data) => api.put(`/tasks/${id}`, data);
 export const updateTaskStatus = (id, status) => api.patch(`/tasks/${id}/status`, { status });
 export const deleteTask = (id) => api.delete(`/tasks/${id}`);
 
+// Backups
+export const getBackups = () => api.get('/backup');
+export const triggerBackup = () => api.post('/backup');
+
+// Articles
+export const getArticles = (params) => api.get('/articles', { params });
+export const getArticle = (id) => api.get(`/articles/${id}`);
+export const createArticle = (data) => api.post('/articles', data);
+export const updateArticle = (id, data) => api.put(`/articles/${id}`, data);
+export const deleteArticle = (id) => api.delete(`/articles/${id}`);
+
+// Team
+export const getTeam = () => api.get('/team');
+export const inviteTeamMember = (data) => api.post('/team', data);
+export const updateTeamMember = (id, data) => api.put(`/team/${id}`, data);
+export const deleteTeamMember = (id) => api.delete(`/team/${id}`);
+
 export default api;

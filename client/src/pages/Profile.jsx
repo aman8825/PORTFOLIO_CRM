@@ -260,13 +260,13 @@ const Profile = () => {
                     
                     <div className="border-t border-slate-700/50 pt-8">
                       <h3 className="text-lg font-medium text-white mb-4">Resume Document</h3>
-                      <Input 
-                        label="Resume Public URL" 
-                        placeholder="https://drive.google.com/..." 
-                        value={formData.resume.url} 
-                        onChange={e => handleChange('resume', 'url', e.target.value)} 
-                      />
-                      <p className="text-xs text-slate-400 mt-1">Provide a public link to your resume (PDF recommended).</p>
+                      <div className="p-4 bg-slate-800/30 border border-slate-700/50 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-white">Resume Version History</p>
+                          <p className="text-xs text-slate-400">Manage multiple resume versions and active links securely.</p>
+                        </div>
+                        <Button type="button" onClick={() => window.location.href='/admin/resume'}>Go to Resume Manager</Button>
+                      </div>
                     </div>
                   </div>
                 )}

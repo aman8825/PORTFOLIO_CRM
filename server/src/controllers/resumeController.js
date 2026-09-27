@@ -1,4 +1,5 @@
 const Resume = require('../models/Resume');
+const { logActivity } = require('../services/activityLogger');
 
 exports.getResumes = async (req, res) => {
   try {
@@ -21,6 +22,7 @@ exports.createResume = async (req, res) => {
     }
     
     const resume = await Resume.create(req.body);
+    await logActivity(req, 'RESUME_CREATED', 'Resume', `Uploaded new resume version: ${resume.fileName}`);
     res.status(201).json({ success: true, data: resume });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
@@ -37,6 +39,11 @@ exports.updateResume = async (req, res) => {
       new: true, runValidators: true
     });
     if (!resume) return res.status(404).json({ success: false, message: 'Not found' });
+    
+    if (req.body.isActive) {
+      await logActivity(req, 'RESUME_ACTIVATED', 'Resume', `Set resume as active: ${resume.fileName}`);
+    }
+    
     res.status(200).json({ success: true, data: resume });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
@@ -47,6 +54,7 @@ exports.deleteResume = async (req, res) => {
   try {
     const resume = await Resume.findByIdAndDelete(req.params.id);
     if (!resume) return res.status(404).json({ success: false, message: 'Not found' });
+    await logActivity(req, 'RESUME_DELETED', 'Resume', `Deleted resume version: ${resume.fileName}`);
     res.status(200).json({ success: true, data: {} });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error' });

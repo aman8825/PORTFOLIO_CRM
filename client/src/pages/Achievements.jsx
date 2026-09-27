@@ -5,7 +5,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input, Textarea } from '../components/ui/Input';
 import { Modal, ConfirmDialog } from '../components/ui/Modal';
-import { Plus, Edit2, Trash2, CheckCircle, XCircle, Award } from 'lucide-react';
+import { Plus, Edit2, Trash2, CheckCircle, XCircle, Award, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ImageUploader } from '../components/ui/ImageUploader';
 
@@ -162,7 +162,16 @@ const Achievements = () => {
                   {ach.enabled ? <CheckCircle size={14} /> : <XCircle size={14} />}
                   {ach.enabled ? 'Active' : 'Hidden'}
                 </button>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                  <a 
+                    href={`${import.meta.env.VITE_PORTFOLIO_URL || 'http://localhost:5173'}#achievements`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded-md hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+                    title="Preview Achievement"
+                  >
+                    <Globe size={14} />
+                  </a>
                   <Button variant="ghost" size="sm" onClick={() => openModal(ach)}><Edit2 size={14} /></Button>
                   <Button variant="danger" size="sm" onClick={() => { setCurrentAch(ach); setIsConfirmOpen(true); }}><Trash2 size={14} /></Button>
                 </div>

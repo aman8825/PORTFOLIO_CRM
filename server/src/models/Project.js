@@ -27,7 +27,7 @@ const projectSchema = new mongoose.Schema({
     resourceType: String
   }],
   featured: { type: Boolean, default: false },
-  published: { type: Boolean, default: true },
+  status: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
   order: { type: Number, default: 0 },
   caseStudy: {
     enabled: { type: Boolean, default: false },
@@ -51,7 +51,16 @@ const projectSchema = new mongoose.Schema({
     type: { type: String },
     visible: { type: Boolean, default: true },
     order: { type: Number, default: 0 }
-  }]
+  }],
+  seo: {
+    title: String,
+    description: String,
+    keywords: String,
+    ogImage: {
+      url: String,
+      publicId: String
+    }
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Project', projectSchema);

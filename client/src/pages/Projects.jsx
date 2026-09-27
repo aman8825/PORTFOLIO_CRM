@@ -18,19 +18,21 @@ const Projects = () => {
   const [currentProject, setCurrentProject] = useState(null);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
+  const [activeFilter, setActiveFilter] = useState('all');
 
   const initialForm = {
     title: '', slug: '', shortDescription: '', detailedDescription: '',
     category: '', technologies: [''], features: [''],
     githubUrl: '', liveDemoUrl: '', thumbnailImage: null, galleryImages: [],
-    featured: false, published: true, order: 0,
+    featured: false, status: 'draft', order: 0,
     caseStudy: {
       enabled: false,
       summary: '', overview: '', problem: '', solution: '',
       features: [], challenges: [],
       implementation: '', architecture: '', outcome: '', role: '', duration: '', team: ''
     },
-    documents: []
+    documents: [],
+    seo: { title: '', description: '', keywords: '', ogImage: null }
   };
   
   const [formData, setFormData] = useState(initialForm);
@@ -159,10 +161,22 @@ const Projects = () => {
     }
   };
 
-  const toggleStatus = async (project, field) => {
+  const toggleProjectStatus = async (project) => {
+    const nextStatus = project.status === 'draft' ? 'published' : project.status === 'published' ? 'archived' : 'draft';
     try {
-      await updateProject(project._id, { [field]: !project[field] });
-      setProjects(projects.map(p => p._id === project._id ? { ...p, [field]: !project[field] } : p));
+      await updateProject(project._id, { status: nextStatus });
+      setProjects(projects.map(p => p._id === project._id ? { ...p, status: nextStatus } : p));
+      notify.success(`Project moved to ${nextStatus}.`);
+    } catch (err) {
+      console.error(err);
+      notify.error('Unable to update project status.');
+    }
+  };
+
+  const toggleFeatured = async (project) => {
+    try {
+      await updateProject(project._id, { featured: !project.featured });
+      setProjects(projects.map(p => p._id === project._id ? { ...p, featured: !project.featured } : p));
       notify.success('Project updated successfully.');
     } catch (err) {
       console.error(err);
@@ -193,13 +207,25 @@ const Projects = () => {
         action={<Button onClick={() => openModal()}><Plus size={18} /> Add Project</Button>}
       />
 
+      <div className="flex gap-4 mb-6 border-b border-slate-700/50 pb-2 overflow-x-auto">
+        {['all', 'draft', 'published', 'archived'].map(filter => (
+          <button
+            key={filter}
+            onClick={() => setActiveFilter(filter)}
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors capitalize ${activeFilter === filter ? 'text-white border-b-2 border-primary bg-primary/5' : 'text-slate-400 hover:text-slate-200'}`}
+          >
+            {filter}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {loading ? (
           <div className="col-span-full p-8 text-center text-slate-400">Loading...</div>
         ) : projects.length === 0 ? (
           <div className="col-span-full p-8 text-center text-slate-500 bg-surface border border-slate-700/50 rounded-xl">No projects added yet.</div>
         ) : (
-          projects.map(project => (
+          projects.filter(p => activeFilter === 'all' ? true : p.status === activeFilter).map(project => (
             <Card key={project._id} className="flex flex-col">
               <div className="relative h-48 bg-slate-800 border-b border-slate-700/50">
                 {project.thumbnailImage ? (
@@ -209,8 +235,8 @@ const Projects = () => {
                 )}
                 <div className="absolute top-2 right-2 flex gap-2">
                   {project.featured && <span className="bg-amber-500 text-white text-[10px] uppercase font-bold px-2 py-1 rounded flex items-center gap-1"><Star size={12}/> Featured</span>}
-                  <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded ${project.published ? 'bg-green-500 text-white' : 'bg-slate-700 text-slate-300'}`}>
-                    {project.published ? 'Published' : 'Draft'}
+                  <span className={`text-[10px] uppercase font-bold px-2 py-1 rounded ${project.status === 'published' ? 'bg-green-500 text-white' : project.status === 'archived' ? 'bg-red-500 text-white' : 'bg-slate-700 text-slate-300'}`}>
+                    {project.status === 'published' ? 'Published' : project.status === 'archived' ? 'Archived' : 'Draft'}
                   </span>
                 </div>
               </div>
@@ -221,10 +247,19 @@ const Projects = () => {
                 
                 <div className="mt-auto flex justify-between items-center pt-4 border-t border-slate-700/50">
                   <div className="flex gap-2">
-                    <button onClick={() => toggleStatus(project, 'published')} className={`p-1.5 rounded-md transition-colors ${project.published ? 'text-green-400 hover:bg-green-400/10' : 'text-slate-500 hover:bg-slate-700'}`} title="Toggle Visibility"><Globe size={18} /></button>
-                    <button onClick={() => toggleStatus(project, 'featured')} className={`p-1.5 rounded-md transition-colors ${project.featured ? 'text-amber-400 hover:bg-amber-400/10' : 'text-slate-500 hover:bg-slate-700'}`} title="Toggle Featured"><Star size={18} /></button>
+                    <button onClick={() => toggleProjectStatus(project)} className={`p-1.5 rounded-md transition-colors ${project.status === 'published' ? 'text-green-400 hover:bg-green-400/10' : project.status === 'archived' ? 'text-red-400 hover:bg-red-400/10' : 'text-slate-500 hover:bg-slate-700'}`} title={`Current: ${project.status}. Click to change`}><Globe size={18} /></button>
+                    <button onClick={() => toggleFeatured(project)} className={`p-1.5 rounded-md transition-colors ${project.featured ? 'text-amber-400 hover:bg-amber-400/10' : 'text-slate-500 hover:bg-slate-700'}`} title="Toggle Featured"><Star size={18} /></button>
                   </div>
                   <div className="flex gap-2">
+                    <a 
+                      href={`${import.meta.env.VITE_PORTFOLIO_URL || 'http://localhost:5173'}/project/${project.slug}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="px-2.5 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors flex items-center gap-1"
+                      title="Preview Project"
+                    >
+                      <Globe size={14} /> Preview
+                    </a>
                     <Button variant="secondary" size="sm" onClick={() => openModal(project)}><Edit2 size={14} /> Edit</Button>
                     <Button variant="danger" size="sm" onClick={() => { setCurrentProject(project); setIsConfirmOpen(true); }}><Trash2 size={14} /></Button>
                   </div>
@@ -239,13 +274,13 @@ const Projects = () => {
         
         <form onSubmit={handleSave} className="space-y-4">
           <div className="flex border-b border-slate-700/50 mb-4 overflow-x-auto overflow-y-hidden">
-            {['basic', 'media', 'links', 'caseStudy', 'documents'].map(tab => (
+            {['basic', 'media', 'links', 'caseStudy', 'documents', 'seo'].map(tab => (
               <button 
                 key={tab} type="button" 
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 text-sm font-medium whitespace-nowrap ${activeTab === tab ? 'text-white border-b-2 border-primary' : 'text-slate-400 hover:text-slate-200'}`}
               >
-                {tab === 'caseStudy' ? 'Case Study' : tab === 'basic' ? 'Basic Info' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {tab === 'caseStudy' ? 'Case Study' : tab === 'seo' ? 'SEO' : tab === 'basic' ? 'Basic Info' : tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>
             ))}
           </div>
@@ -363,12 +398,30 @@ const Projects = () => {
             <Button type="button" variant="secondary" onClick={addDocument}>+ Add Document</Button>
           </div>
 
-          <div className="flex gap-6 pt-4 border-t border-slate-700/50">
-            <div className="flex items-center gap-2">
-              <input type="checkbox" id="published" checked={formData.published} onChange={e => setFormData({...formData, published: e.target.checked})} className="rounded bg-slate-800 border-slate-700" />
-              <label htmlFor="published" className="text-sm text-slate-300">Published</label>
+          <div className={`space-y-4 ${activeTab !== 'seo' ? 'hidden' : ''}`}>
+            <p className="text-sm text-slate-400 mb-4">Optimize how this project appears in search engines and social media sharing.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input label="SEO Title" value={formData.seo?.title || ''} onChange={e => setFormData({...formData, seo: {...(formData.seo || {}), title: e.target.value}})} placeholder="Leave blank to use project title" />
+              <Input label="SEO Keywords" value={formData.seo?.keywords || ''} onChange={e => setFormData({...formData, seo: {...(formData.seo || {}), keywords: e.target.value}})} placeholder="React, Node.js, Portfolio..." />
             </div>
-            <div className="flex items-center gap-2">
+            <Textarea label="SEO Description" value={formData.seo?.description || ''} onChange={e => setFormData({...formData, seo: {...(formData.seo || {}), description: e.target.value}})} rows="3" placeholder="Leave blank to use short description" />
+            <ImageUploader label="Open Graph (Social Share) Image" folder="portfolio/projects/seo" value={formData.seo?.ogImage} onChange={val => setFormData({ ...formData, seo: { ...(formData.seo || {}), ogImage: val } })} />
+          </div>
+
+          <div className="flex gap-6 pt-4 border-t border-slate-700/50">
+            <div className="flex flex-col">
+              <label className="block text-xs font-medium text-slate-400 mb-1">Status</label>
+              <select 
+                value={formData.status || 'draft'} 
+                onChange={e => setFormData({...formData, status: e.target.value})}
+                className="bg-slate-800/50 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2 mt-5">
               <input type="checkbox" id="featured" checked={formData.featured} onChange={e => setFormData({...formData, featured: e.target.checked})} className="rounded bg-slate-800 border-slate-700" />
               <label htmlFor="featured" className="text-sm text-slate-300">Featured</label>
             </div>

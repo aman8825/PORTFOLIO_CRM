@@ -39,7 +39,16 @@ exports.getPublicSettings = async (req, res) => {
 
 exports.updateSettings = async (req, res) => {
   try {
+    const oldSettings = await Settings.findOne();
     const settings = await Settings.findOneAndUpdate({}, req.body, { new: true, upsert: true, runValidators: true });
+    
+    // Log if maintenance mode changed
+    if (oldSettings && oldSettings.maintenanceMode !== settings.maintenanceMode) {
+      const { logActivity } = require('../services/activityLogger');
+      const state = settings.maintenanceMode ? 'Enabled' : 'Disabled';
+      await logActivity(req, 'SETTINGS_UPDATED', 'Settings', `Maintenance Mode ${state}`);
+    }
+
     res.status(200).json({ success: true, data: settings });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
