@@ -42,8 +42,9 @@ exports.createArticle = async (req, res) => {
     await ActivityLog.create({
       action: 'ARTICLE_CREATED',
       description: `Drafted new article: ${article.title}`,
-      performedBy: req.admin._id,
-      entityType: 'Article'
+      actor: req.admin._id,
+      entityType: 'Article',
+      entityId: article._id
     });
 
     res.status(201).json({ success: true, data: article });
@@ -67,8 +68,9 @@ exports.updateArticle = async (req, res) => {
     await ActivityLog.create({
       action: 'ARTICLE_UPDATED',
       description: `Updated article: ${article.title}`,
-      performedBy: req.admin._id,
-      entityType: 'Article'
+      actor: req.admin._id,
+      entityType: 'Article',
+      entityId: article._id
     });
 
     res.status(200).json({ success: true, data: article });
@@ -88,8 +90,9 @@ exports.deleteArticle = async (req, res) => {
     await ActivityLog.create({
       action: 'ARTICLE_DELETED',
       description: `Deleted article: ${article.title}`,
-      performedBy: req.admin._id,
-      entityType: 'Article'
+      actor: req.admin._id,
+      entityType: 'Article',
+      entityId: article._id
     });
 
     res.status(200).json({ success: true, data: {} });
