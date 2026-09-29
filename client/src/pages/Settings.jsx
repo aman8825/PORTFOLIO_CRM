@@ -3,6 +3,7 @@ import { getSettings, updateSettings, updatePassword, logout, getBackups, trigge
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 import { Save, LogOut, Shield, Mail, Globe, Database, Download, Play, Palette, Type, Users, Plus, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';

@@ -32,6 +32,26 @@ exports.getArticle = async (req, res) => {
   }
 };
 
+// @desc    Get single article by slug
+// @route   GET /api/articles/slug/:slug
+// @access  Public
+exports.getArticleBySlug = async (req, res) => {
+  try {
+    const article = await Article.findOne({ slug: req.params.slug });
+    if (!article) return res.status(404).json({ success: false, message: 'Article not found' });
+    
+    // Increment view count if published
+    if (article.isPublished) {
+      article.views += 1;
+      await article.save();
+    }
+    
+    res.status(200).json({ success: true, data: article });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
 // @desc    Create new article
 // @route   POST /api/articles
 // @access  Private

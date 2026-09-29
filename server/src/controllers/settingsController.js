@@ -39,6 +39,7 @@ exports.getPublicSettings = async (req, res) => {
 
 exports.updateSettings = async (req, res) => {
   try {
+    if (req.body._id) delete req.body._id;
     const oldSettings = await Settings.findOne();
     const settings = await Settings.findOneAndUpdate({}, req.body, { new: true, upsert: true, runValidators: true });
     
@@ -51,6 +52,7 @@ exports.updateSettings = async (req, res) => {
 
     res.status(200).json({ success: true, data: settings });
   } catch (error) {
+    console.error('Error updating settings:', error);
     res.status(400).json({ success: false, message: error.message });
   }
 };
