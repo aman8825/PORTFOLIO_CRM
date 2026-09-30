@@ -62,6 +62,7 @@ export const uploadImage = (formData) => api.post('/uploads/image', formData, {
   },
 });
 export const deleteImage = (publicId) => api.delete('/uploads/image', { data: { publicId } });
+export const getMedia = () => api.get('/uploads');
 
 // AI Assistant
 export const getAiStats = () => api.get('/assistant/stats');
@@ -95,5 +96,11 @@ export const getTeam = () => api.get('/team');
 export const inviteTeamMember = (data) => api.post('/team', data);
 export const updateTeamMember = (id, data) => api.put(`/team/${id}`, data);
 export const deleteTeamMember = (id) => api.delete(`/team/${id}`);
+
+// Testimonials
+export const getTestimonials = (params) => api.get('/testimonials', { params });
+export const createTestimonial = (data) => api.post('/testimonials', data);
+export const updateTestimonial = (id, data) => api.put(`/testimonials/${id}`, data);
+export const deleteTestimonial = (id) => api.delete(`/testimonials/${id}`);
 
 export default api;

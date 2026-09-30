@@ -20,6 +20,7 @@ router.use('/activity', require('./api/activity'));
 router.use('/backup', require('./api/backup'));
 router.use('/articles', require('./api/articles'));
 router.use('/team', require('./api/team'));
+router.use('/testimonials', require('./api/testimonials'));
 
 router.get('/health', (req, res) => {
   res.status(200).json({ status: 'API is healthy' });

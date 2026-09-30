@@ -252,7 +252,7 @@ const Projects = () => {
                   </div>
                   <div className="flex gap-2">
                     <a 
-                      href={`${import.meta.env.VITE_PORTFOLIO_URL || 'http://localhost:5173'}/project/${project.slug}`} 
+                      href={`${import.meta.env.VITE_PORTFOLIO_URL || 'https://portfolio-frontend-exqgcct1y-ricr.vercel.app'}/project/${project.slug}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="px-2.5 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors flex items-center gap-1"

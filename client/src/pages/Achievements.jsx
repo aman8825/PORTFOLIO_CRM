@@ -164,7 +164,7 @@ const Achievements = () => {
                 </button>
                 <div className="flex gap-2 items-center">
                   <a 
-                    href={`${import.meta.env.VITE_PORTFOLIO_URL || 'http://localhost:5173'}#achievements`} 
+                    href={`${import.meta.env.VITE_PORTFOLIO_URL || 'https://portfolio-frontend-exqgcct1y-ricr.vercel.app'}#achievements`} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="p-1.5 rounded-md hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"

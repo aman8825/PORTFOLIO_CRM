@@ -21,7 +21,7 @@ const performBackup = async () => {
   return new Promise(async (resolve, reject) => {
     try {
       const output = fs.createWriteStream(backupPath);
-      const archive = archiver('zip', { zlib: { level: 9 } });
+      const archive = new archiver.ZipArchive({ zlib: { level: 9 } });
 
       output.on('close', () => {
         console.log(`Backup completed successfully: ${backupFilename} (${archive.pointer()} bytes)`);

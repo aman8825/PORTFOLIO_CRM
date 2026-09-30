@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import { Send, Loader2, CheckCircle2 } from 'lucide-react';
 
 const TestContactForm = () => {
@@ -11,7 +11,7 @@ const TestContactForm = () => {
     setStatus({ loading: true, error: '', success: false });
 
     try {
-      await axios.post('/messages', formData);
+      await api.post('/messages', formData);
       setStatus({ loading: false, error: '', success: true });
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (err) {

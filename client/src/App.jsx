@@ -19,6 +19,9 @@ import ActivityLogs from './pages/ActivityLogs';
 import AiAssistant from './pages/AiAssistant';
 import Analytics from './pages/Analytics';
 import Articles from './pages/Articles';
+import Testimonials from './pages/Testimonials';
+import MediaLibrary from './pages/MediaLibrary';
+import PortfolioHealth from './pages/PortfolioHealth';
 
 function App() {
   return (
@@ -46,9 +49,12 @@ function App() {
             <Route path="resume" element={<Resume />} />
             <Route path="messages" element={<Messages />} />
             <Route path="articles" element={<Articles />} />
+            <Route path="testimonials" element={<Testimonials />} />
+            <Route path="media" element={<MediaLibrary />} />
             <Route path="assistant" element={<AiAssistant />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="activity" element={<ActivityLogs />} />
+            <Route path="health" element={<PortfolioHealth />} />
             <Route path="settings" element={<Settings />} />
           </Route>
 

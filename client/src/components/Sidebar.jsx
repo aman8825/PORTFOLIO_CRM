@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, User, Code, Briefcase, FolderGit2, Award, FileText, MessageSquare, Settings, Menu, X, Bot, ClipboardList, BarChart2, Activity } from 'lucide-react';
+import { LayoutDashboard, User, Code, Briefcase, FolderGit2, Award, FileText, MessageSquare, Settings, Menu, X, Bot, ClipboardList, BarChart2, Activity, Image } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const navItems = [
@@ -12,10 +12,13 @@ const navItems = [
   { name: 'Achievements', path: '/admin/achievements', icon: Award },
   { name: 'Tasks', path: '/admin/tasks', icon: ClipboardList },
   { name: 'Articles', path: '/admin/articles', icon: FileText },
+  { name: 'Testimonials', path: '/admin/testimonials', icon: MessageSquare },
+  { name: 'Media Library', path: '/admin/media', icon: Image },
   { name: 'Resume', path: '/admin/resume', icon: FileText },
   { name: 'Messages', path: '/admin/messages', icon: MessageSquare },
   { name: 'Analytics', path: '/admin/analytics', icon: BarChart2 },
   { name: 'Activity', path: '/admin/activity', icon: Activity },
+  { name: 'Health', path: '/admin/health', icon: Activity },
   { name: 'AI Assistant', path: '/admin/assistant', icon: Bot },
   { name: 'Settings', path: '/admin/settings', icon: Settings },
 ];

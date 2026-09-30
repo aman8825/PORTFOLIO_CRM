@@ -12,6 +12,7 @@ const articleSchema = new mongoose.Schema({
     unique: true,
     required: true
   },
+  excerpt: { type: String },
   content: {
     type: String,
     required: [true, 'Please add article content']
@@ -24,10 +25,16 @@ const articleSchema = new mongoose.Schema({
     type: [String],
     default: []
   },
-  isPublished: {
-    type: Boolean,
-    default: false
+  category: { type: String },
+  author: { type: String },
+  seoTitle: { type: String },
+  seoDescription: { type: String },
+  status: {
+    type: String,
+    enum: ['Draft', 'Published', 'Scheduled'],
+    default: 'Draft'
   },
+  publishedAt: { type: Date },
   views: {
     type: Number,
     default: 0

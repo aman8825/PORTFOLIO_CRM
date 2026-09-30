@@ -21,7 +21,19 @@ const Settings = () => {
     maintenanceEstimatedReturn: '',
     themePrimaryColor: '#3b82f6',
     themeSecondaryColor: '#10b981',
-    themeFontFamily: 'Inter'
+    themeFontFamily: 'Inter',
+    recruiterViewEnabled: false,
+    recruiterShowSkills: true,
+    recruiterShowExperience: true,
+    recruiterShowProjects: true,
+    recruiterShowAchievements: true,
+    recruiterShowResume: true,
+    recruiterShowContact: true,
+    seoMetaTitle: '',
+    seoMetaDescription: '',
+    seoOpenGraphImage: '',
+    seoTwitterHandle: '',
+    seoEnableJsonLd: true
   });
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   
@@ -279,6 +291,62 @@ const Settings = () => {
             </form>
           </Card>
 
+          {/* Recruiter View Settings */}
+          <Card>
+            <CardHeader>
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Users size={18} className="text-emerald-400" /> Recruiter View
+              </h3>
+            </CardHeader>
+            <form onSubmit={handleSettingsSubmit}>
+              <CardBody className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                  <div>
+                    <h4 className="font-medium text-white text-sm">Enable Recruiter View</h4>
+                    <p className="text-xs text-slate-400">Provide a concise /recruiter route</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" checked={settings.recruiterViewEnabled || false} onChange={e => setSettings({...settings, recruiterViewEnabled: e.target.checked})} className="sr-only peer" />
+                    <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                  </label>
+                </div>
+
+                {settings.recruiterViewEnabled && (
+                  <div className="p-4 bg-slate-800/30 border border-slate-700/50 rounded-lg space-y-4">
+                    <h4 className="font-medium text-white text-sm">Visible Sections</h4>
+                    
+                    {[
+                      { key: 'recruiterShowSkills', label: 'Skills' },
+                      { key: 'recruiterShowExperience', label: 'Experience' },
+                      { key: 'recruiterShowProjects', label: 'Projects' },
+                      { key: 'recruiterShowAchievements', label: 'Achievements' },
+                      { key: 'recruiterShowResume', label: 'Resume Download' },
+                      { key: 'recruiterShowContact', label: 'Contact Form' }
+                    ].map(item => (
+                      <div key={item.key} className="flex items-center justify-between">
+                        <span className="text-sm text-slate-300">{item.label}</span>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            checked={settings[item.key] !== false} 
+                            onChange={e => setSettings({...settings, [item.key]: e.target.checked})} 
+                            className="sr-only peer" 
+                          />
+                          <div className="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardBody>
+              <div className="p-4 border-t border-slate-700/50 bg-slate-800/20 flex justify-end">
+                <Button type="submit" loading={savingSettings}>
+                  <Save size={16} /> Save Settings
+                </Button>
+              </div>
+            </form>
+          </Card>
+
           {/* Theme Settings */}
           <Card>
             <CardHeader>
@@ -356,6 +424,62 @@ const Settings = () => {
 
         {/* Security Settings */}
         <div className="space-y-8">
+          {/* SEO Settings */}
+          <Card>
+            <CardHeader>
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Globe size={18} className="text-orange-400" /> Global SEO Configuration
+              </h3>
+            </CardHeader>
+            <form onSubmit={handleSettingsSubmit}>
+              <CardBody className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border border-slate-700/50 mb-2">
+                  <div>
+                    <h4 className="font-medium text-white text-sm">Enable JSON-LD Structured Data</h4>
+                    <p className="text-xs text-slate-400">Improve rich snippets in Google Search</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" checked={settings.seoEnableJsonLd !== false} onChange={e => setSettings({...settings, seoEnableJsonLd: e.target.checked})} className="sr-only peer" />
+                    <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                  </label>
+                </div>
+                <Input 
+                  label="Meta Title (Default)" 
+                  value={settings.seoMetaTitle} 
+                  onChange={e => setSettings({...settings, seoMetaTitle: e.target.value})} 
+                  placeholder="e.g. John Doe | Full Stack Developer"
+                />
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Meta Description (Default)</label>
+                  <textarea
+                    rows={3}
+                    value={settings.seoMetaDescription || ''}
+                    onChange={e => setSettings({...settings, seoMetaDescription: e.target.value})}
+                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-lg focus:outline-none focus:border-primary text-white text-sm"
+                    placeholder="Brief summary of who you are and what you do..."
+                  />
+                </div>
+                <Input 
+                  label="OpenGraph Default Image URL" 
+                  value={settings.seoOpenGraphImage} 
+                  onChange={e => setSettings({...settings, seoOpenGraphImage: e.target.value})} 
+                  placeholder="Link to an image from Media Library"
+                />
+                <Input 
+                  label="Twitter Handle" 
+                  value={settings.seoTwitterHandle} 
+                  onChange={e => setSettings({...settings, seoTwitterHandle: e.target.value})} 
+                  placeholder="e.g. @johndoe"
+                />
+              </CardBody>
+              <div className="p-4 border-t border-slate-700/50 bg-slate-800/20 flex justify-end">
+                <Button type="submit" loading={savingSettings}>
+                  <Save size={16} /> Save SEO
+                </Button>
+              </div>
+            </form>
+          </Card>
+
           <Card>
             <CardHeader>
               <h3 className="text-lg font-semibold text-white flex items-center gap-2">
@@ -449,7 +573,7 @@ const Settings = () => {
                           <p className="text-[10px] text-slate-500">{(b.size / 1024).toFixed(2)} KB • {new Date(b.createdAt).toLocaleString()}</p>
                         </div>
                         <a 
-                          href={`http://localhost:5000/api/backup/download/${b.filename}`} 
+                          href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/backup/download/${b.filename}`} 
                           target="_blank" 
                           rel="noreferrer"
                           className="p-2 text-primary hover:text-blue-400 bg-primary/10 hover:bg-primary/20 rounded-md transition-colors"

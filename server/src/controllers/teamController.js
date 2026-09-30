@@ -35,7 +35,7 @@ exports.inviteTeamMember = async (req, res) => {
     await ActivityLog.create({
       action: 'ADMIN_INVITED',
       description: `Invited new team member: ${admin.email} (${admin.role})`,
-      performedBy: req.admin._id,
+      actor: req.admin._id,
       entityType: 'Admin'
     });
 
@@ -66,7 +66,7 @@ exports.updateTeamMember = async (req, res) => {
     await ActivityLog.create({
       action: 'ADMIN_UPDATED',
       description: `Updated role for ${admin.email} to ${role}`,
-      performedBy: req.admin._id,
+      actor: req.admin._id,
       entityType: 'Admin'
     });
 
@@ -94,7 +94,7 @@ exports.deleteTeamMember = async (req, res) => {
     await ActivityLog.create({
       action: 'ADMIN_DELETED',
       description: `Removed team member: ${admin.email}`,
-      performedBy: req.admin._id,
+      actor: req.admin._id,
       entityType: 'Admin'
     });
 

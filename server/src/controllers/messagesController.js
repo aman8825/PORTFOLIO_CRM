@@ -18,7 +18,7 @@ exports.createMessage = async (req, res) => {
       email,
       subject,
       message,
-      status: 'unread'
+      status: 'new'
     });
 
     // Fire & forget email notifications
@@ -94,19 +94,27 @@ exports.getMessageById = async (req, res) => {
 // @access  Private (Admin)
 exports.updateMessage = async (req, res) => {
   try {
-    const { status, starred } = req.body;
+    const { status, priority, notes, followUpDate, tags, starred } = req.body;
     
     let updateFields = {};
     if (status) {
-      if (!['unread', 'read', 'replied', 'archived'].includes(status)) {
+      if (!['new', 'read', 'contacted', 'replied', 'qualified', 'closed', 'archived'].includes(status)) {
         return res.status(400).json({ success: false, message: 'Invalid status' });
       }
       updateFields.status = status;
     }
     
-    if (starred !== undefined) {
-      updateFields.starred = starred;
+    if (priority) {
+      if (!['low', 'medium', 'high'].includes(priority)) {
+        return res.status(400).json({ success: false, message: 'Invalid priority' });
+      }
+      updateFields.priority = priority;
     }
+    
+    if (notes !== undefined) updateFields.notes = notes;
+    if (followUpDate !== undefined) updateFields.followUpDate = followUpDate;
+    if (tags !== undefined) updateFields.tags = tags;
+    if (starred !== undefined) updateFields.starred = starred;
 
     const message = await Message.findByIdAndUpdate(
       req.params.id,

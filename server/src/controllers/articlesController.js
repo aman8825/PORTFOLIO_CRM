@@ -6,10 +6,15 @@ const ActivityLog = require('../models/ActivityLog');
 // @access  Public
 exports.getArticles = async (req, res) => {
   try {
-    const { isPublished } = req.query;
+    const { status, all } = req.query;
     let query = {};
-    if (isPublished !== undefined) {
-      query.isPublished = isPublished === 'true';
+    
+    // If 'all' is not passed, default to only showing Published.
+    // Dashboard should pass ?all=true to get everything.
+    if (status) {
+      query.status = status;
+    } else if (all !== 'true') {
+      query.status = 'Published';
     }
 
     const articles = await Article.find(query).sort({ createdAt: -1 });
@@ -41,7 +46,7 @@ exports.getArticleBySlug = async (req, res) => {
     if (!article) return res.status(404).json({ success: false, message: 'Article not found' });
     
     // Increment view count if published
-    if (article.isPublished) {
+    if (article.status === 'Published') {
       article.views += 1;
       await article.save();
     }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import { Search, Filter, Archive, Trash2, Mail, MailOpen, Clock, AlertCircle, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ReplyComposer from '../components/ReplyComposer';
@@ -20,7 +20,7 @@ const Messages = () => {
   const fetchMessages = async (searchQuery = search) => {
     setLoading(true);
     try {
-      const res = await axios.get(`/messages`, {
+      const res = await api.get(`/messages`, {
         params: { status: statusFilter, search: searchQuery }
       });
       if (res.data.success) {
@@ -40,7 +40,7 @@ const Messages = () => {
 
   const updateMessage = async (id, updateData) => {
     try {
-      await axios.patch(`/messages/${id}`, updateData);
+      await api.patch(`/messages/${id}`, updateData);
       setMessages(messages.map(m => m._id === id ? { ...m, ...updateData } : m));
       if (selectedMessage && selectedMessage._id === id) {
         setSelectedMessage({ ...selectedMessage, ...updateData });
@@ -53,7 +53,7 @@ const Messages = () => {
   const deleteMessage = async (id) => {
     if (!window.confirm('Are you sure you want to delete this message?')) return;
     try {
-      await axios.delete(`/messages/${id}`);
+      await api.delete(`/messages/${id}`);
       fetchMessages();
       if (selectedMessage && selectedMessage._id === id) {
         setSelectedMessage(null);
@@ -94,9 +94,12 @@ const Messages = () => {
               className="bg-slate-800/50 border border-slate-700 text-sm rounded-lg px-3 py-1.5 text-slate-300 focus:outline-none"
             >
               <option value="all">All Messages</option>
-              <option value="unread">Unread</option>
+              <option value="new">New</option>
               <option value="read">Read</option>
+              <option value="contacted">Contacted</option>
               <option value="replied">Replied</option>
+              <option value="qualified">Qualified</option>
+              <option value="closed">Closed</option>
               <option value="archived">Archived</option>
             </select>
           </div>
@@ -117,12 +120,12 @@ const Messages = () => {
                   key={msg._id}
                   onClick={() => {
                     setSelectedMessage(msg);
-                    if (msg.status === 'unread') updateMessage(msg._id, { status: 'read' });
+                    if (msg.status === 'new') updateMessage(msg._id, { status: 'read' });
                   }}
                   className={`p-4 cursor-pointer hover:bg-slate-800/50 transition-colors ${selectedMessage?._id === msg._id ? 'bg-slate-800 border-l-2 border-primary' : 'border-l-2 border-transparent'}`}
                 >
                   <div className="flex justify-between items-start mb-1 gap-2">
-                    <span className={`font-medium truncate ${msg.status === 'unread' ? 'text-white' : 'text-slate-300'}`}>
+                    <span className={`font-medium truncate ${msg.status === 'new' ? 'text-white' : 'text-slate-300'}`}>
                       {msg.name}
                     </span>
                     <div className="flex items-center gap-2 flex-shrink-0">
@@ -132,17 +135,25 @@ const Messages = () => {
                       </span>
                     </div>
                   </div>
-                  <p className={`text-sm mb-1 truncate ${msg.status === 'unread' ? 'text-slate-200 font-medium' : 'text-slate-400'}`}>
+                  <p className={`text-sm mb-1 truncate ${msg.status === 'new' ? 'text-slate-200 font-medium' : 'text-slate-400'}`}>
                     {msg.subject}
                   </p>
                   <div className="flex items-center gap-2 mt-2">
                     <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-medium ${
-                      msg.status === 'unread' ? 'bg-blue-500/20 text-blue-400' :
-                      msg.status === 'replied' ? 'bg-green-500/20 text-green-400' :
+                      msg.status === 'new' ? 'bg-blue-500/20 text-blue-400' :
+                      ['contacted', 'replied'].includes(msg.status) ? 'bg-green-500/20 text-green-400' :
+                      ['qualified', 'closed'].includes(msg.status) ? 'bg-purple-500/20 text-purple-400' :
                       'bg-slate-700 text-slate-300'
                     }`}>
                       {msg.status}
                     </span>
+                    {msg.priority && msg.priority !== 'medium' && (
+                      <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-medium ${
+                        msg.priority === 'high' ? 'bg-red-500/20 text-red-400' : 'bg-slate-700 text-slate-300'
+                      }`}>
+                        {msg.priority}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -164,7 +175,29 @@ const Messages = () => {
                   <span>&lt;{selectedMessage.email}&gt;</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                <select
+                  value={selectedMessage.status}
+                  onChange={(e) => updateMessage(selectedMessage._id, { status: e.target.value })}
+                  className="bg-slate-800 border border-slate-700 text-xs rounded-md px-2 py-1 text-slate-300 focus:outline-none"
+                >
+                  <option value="new">New</option>
+                  <option value="read">Read</option>
+                  <option value="contacted">Contacted</option>
+                  <option value="replied">Replied</option>
+                  <option value="qualified">Qualified</option>
+                  <option value="closed">Closed</option>
+                  <option value="archived">Archived</option>
+                </select>
+                <select
+                  value={selectedMessage.priority || 'medium'}
+                  onChange={(e) => updateMessage(selectedMessage._id, { priority: e.target.value })}
+                  className="bg-slate-800 border border-slate-700 text-xs rounded-md px-2 py-1 text-slate-300 focus:outline-none"
+                >
+                  <option value="low">Low Priority</option>
+                  <option value="medium">Medium Priority</option>
+                  <option value="high">High Priority</option>
+                </select>
                 <button 
                   onClick={(e) => { e.stopPropagation(); updateMessage(selectedMessage._id, { starred: !selectedMessage.starred }); }}
                   className={`p-2 rounded-lg transition-colors ${selectedMessage.starred ? 'text-amber-400 hover:bg-amber-400/10' : 'text-slate-400 hover:text-amber-400 hover:bg-slate-700'}`}
@@ -200,6 +233,19 @@ const Messages = () => {
                 {selectedMessage.message}
               </div>
 
+              {/* CRM Internal Notes */}
+              <div className="mb-8 bg-amber-500/5 border border-amber-500/20 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-amber-400 mb-2 flex items-center gap-2">
+                  <Star size={14} /> Internal Notes
+                </h4>
+                <textarea
+                  className="w-full bg-slate-900/50 border border-slate-700 rounded-md p-3 text-sm text-slate-300 focus:outline-none focus:border-amber-500/50 min-h-[80px]"
+                  placeholder="Add private CRM notes here..."
+                  defaultValue={selectedMessage.notes || ''}
+                  onBlur={(e) => updateMessage(selectedMessage._id, { notes: e.target.value })}
+                />
+              </div>
+
               {/* Reply History */}
               {selectedMessage.replies && selectedMessage.replies.length > 0 && (
                 <div className="mt-8 space-y-4">
@@ -225,7 +271,7 @@ const Messages = () => {
                 onSuccess={() => {
                   fetchMessages();
                   // Re-fetch specific message to get new replies
-                  axios.get(`/messages/${selectedMessage._id}`).then(res => {
+                  api.get(`/messages/${selectedMessage._id}`).then(res => {
                     setSelectedMessage(res.data.data);
                   });
                 }} 

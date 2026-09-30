@@ -4,14 +4,23 @@ const Project = require('../models/Project');
 // Create a new analytics event (Public Endpoint)
 exports.trackEvent = async (req, res) => {
   try {
-    const { eventType, metadata } = req.body;
+    const { event, eventType, entityType, entityId, path, referrer, deviceType, browser, os, country, region, metadata } = req.body;
     
     // Hash IP or generate a daily rolling session ID to respect privacy while tracking uniques
     // For this lightweight version, we will just use a generic ID or rely on client-provided session IDs
     const sessionId = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'anonymous';
     
     await AnalyticsEvent.create({
-      eventType,
+      event: event || eventType,
+      entityType,
+      entityId,
+      path,
+      referrer,
+      deviceType,
+      browser,
+      os,
+      country,
+      region,
       metadata,
       sessionId
     });
@@ -44,21 +53,21 @@ exports.getAnalyticsSummary = async (req, res) => {
       mostViewedProjects,
       viewsOverTime
     ] = await Promise.all([
-      AnalyticsEvent.countDocuments({ ...dateFilter, eventType: 'page_view' }),
-      AnalyticsEvent.countDocuments({ ...dateFilter, eventType: 'resume_download' }),
-      AnalyticsEvent.countDocuments({ ...dateFilter, eventType: 'contact_submission' }),
+      AnalyticsEvent.countDocuments({ ...dateFilter, event: 'page_view' }),
+      AnalyticsEvent.countDocuments({ ...dateFilter, event: 'resume_download' }),
+      AnalyticsEvent.countDocuments({ ...dateFilter, event: 'contact_submit' }),
       
       // Aggregate most viewed projects
       AnalyticsEvent.aggregate([
-        { $match: { ...dateFilter, eventType: 'project_view' } },
-        { $group: { _id: '$metadata.projectId', views: { $sum: 1 } } },
+        { $match: { ...dateFilter, event: 'project_view' } },
+        { $group: { _id: '$entityId', views: { $sum: 1 } } },
         { $sort: { views: -1 } },
         { $limit: 5 }
       ]),
 
       // Aggregate views over time (group by day)
       AnalyticsEvent.aggregate([
-        { $match: { ...dateFilter, eventType: { $in: ['page_view', 'project_view'] } } },
+        { $match: { ...dateFilter, event: { $in: ['page_view', 'project_view'] } } },
         { 
           $group: { 
             _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },

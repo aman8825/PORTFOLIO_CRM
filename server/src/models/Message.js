@@ -12,9 +12,17 @@ const messageSchema = new mongoose.Schema({
   message: { type: String, required: true },
   status: {
     type: String,
-    enum: ['unread', 'read', 'replied', 'archived'],
-    default: 'unread'
+    enum: ['new', 'read', 'contacted', 'replied', 'qualified', 'closed', 'archived'],
+    default: 'new'
   },
+  priority: {
+    type: String,
+    enum: ['low', 'medium', 'high'],
+    default: 'medium'
+  },
+  notes: { type: String },
+  followUpDate: { type: Date },
+  tags: [{ type: String }],
   repliedAt: Date,
   replyCount: { type: Number, default: 0 },
   replies: [replySchema],
@@ -22,3 +30,4 @@ const messageSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 module.exports = mongoose.model('Message', messageSchema);
+

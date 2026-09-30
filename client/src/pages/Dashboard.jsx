@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../components/ui/Card';
 import { LayoutDashboard, Code2, Briefcase, Award, FolderKanban, Mail, ArrowRight, Activity, Plus, CheckCircle2, AlertTriangle, Server, Database, Link as LinkIcon, RefreshCw, XCircle } from 'lucide-react';
@@ -15,7 +15,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const res = await axios.get('/dashboard/summary');
+        const res = await api.get('/dashboard/summary');
         setData(res.data.data);
       } catch (err) {
         console.error('Failed to load dashboard data', err);
@@ -29,7 +29,7 @@ const Dashboard = () => {
   const checkLinkHealth = async () => {
     setCheckingLinks(true);
     try {
-      const res = await axios.get('/dashboard/link-health');
+      const res = await api.get('/dashboard/link-health');
       setLinkHealth(res.data.data);
     } catch (err) {
       console.error('Failed to check link health', err);
@@ -119,17 +119,26 @@ const Dashboard = () => {
             </CardHeader>
             <CardBody className="pt-0 flex flex-col gap-2">
               <Link to="/admin/projects" className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-sm text-slate-200 transition-colors">
-                <Plus size={16} className="text-blue-400" /> Add Project
+                <Plus size={16} className="text-blue-400" /> Create Project
               </Link>
               <Link to="/admin/achievements" className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-sm text-slate-200 transition-colors">
-                <Plus size={16} className="text-emerald-400" /> Add Achievement
+                <Plus size={16} className="text-emerald-400" /> Create Achievement
               </Link>
               <Link to="/admin/tasks" className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-sm text-slate-200 transition-colors">
-                <Plus size={16} className="text-amber-400" /> New Task
+                <Plus size={16} className="text-amber-400" /> Create Task
+              </Link>
+              <Link to="/admin/profile" className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-sm text-slate-200 transition-colors">
+                <Plus size={16} className="text-indigo-400" /> Edit Profile
               </Link>
               <Link to="/admin/messages" className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-sm text-slate-200 transition-colors">
                 <Mail size={16} className="text-purple-400" /> View Messages
               </Link>
+              <Link to="/admin/health" className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-sm text-slate-200 transition-colors">
+                <Activity size={16} className="text-rose-400" /> Open Portfolio Health
+              </Link>
+              <a href={import.meta.env.VITE_PORTFOLIO_URL || 'https://portfolio-frontend-exqgcct1y-ricr.vercel.app/'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-sm text-slate-200 transition-colors">
+                <LinkIcon size={16} className="text-cyan-400" /> View Live Portfolio
+              </a>
             </CardBody>
           </Card>
 

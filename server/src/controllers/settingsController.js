@@ -28,7 +28,17 @@ exports.getPublicSettings = async (req, res) => {
       maintenanceMessage: settings.maintenanceMessage,
       maintenanceEstimatedReturn: settings.maintenanceEstimatedReturn,
       maintenanceContactEnabled: settings.maintenanceContactEnabled,
-      portfolioPublic: settings.portfolioPublic
+      portfolioPublic: settings.portfolioPublic,
+      themePrimaryColor: settings.themePrimaryColor,
+      themeSecondaryColor: settings.themeSecondaryColor,
+      themeFontFamily: settings.themeFontFamily,
+      recruiterViewEnabled: settings.recruiterViewEnabled,
+      recruiterShowSkills: settings.recruiterShowSkills,
+      recruiterShowExperience: settings.recruiterShowExperience,
+      recruiterShowProjects: settings.recruiterShowProjects,
+      recruiterShowAchievements: settings.recruiterShowAchievements,
+      recruiterShowResume: settings.recruiterShowResume,
+      recruiterShowContact: settings.recruiterShowContact
     };
     
     res.status(200).json({ success: true, data: publicData });

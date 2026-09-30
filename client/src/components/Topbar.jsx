@@ -1,15 +1,15 @@
 import { useContext } from 'react';
-import { Menu, LogOut, Bell, ExternalLink } from 'lucide-react';
+import { Menu, LogOut, Bell, ExternalLink, Search } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-const Topbar = ({ toggleSidebar }) => {
+const Topbar = ({ toggleSidebar, onOpenPalette }) => {
   const { admin, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   // Assuming the portfolio runs on a standard domain or localhost:5173
   // Since we don't know the exact URL, we'll try to infer it from env or default to localhost
-  const portfolioUrl = import.meta.env.VITE_PORTFOLIO_URL || 'http://localhost:5173';
+  const portfolioUrl = import.meta.env.VITE_PORTFOLIO_URL || 'https://portfolio-frontend-exqgcct1y-ricr.vercel.app/';
 
   const handleLogout = async () => {
     await logout();
@@ -25,7 +25,24 @@ const Topbar = ({ toggleSidebar }) => {
         >
           <Menu size={24} />
         </button>
-        <div className="hidden lg:block text-slate-400 text-sm">
+        
+        <button 
+          onClick={onOpenPalette}
+          className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-800/50 hover:bg-slate-700/50 text-slate-400 hover:text-slate-200 border border-slate-700/50 rounded-md transition-colors text-sm"
+        >
+          <Search size={16} />
+          <span>Search...</span>
+          <kbd className="ml-2 px-1.5 py-0.5 bg-slate-700 rounded text-[10px] font-mono text-slate-300">Ctrl+K</kbd>
+        </button>
+
+        <button 
+          onClick={onOpenPalette}
+          className="sm:hidden text-slate-400 hover:text-white transition-colors"
+        >
+          <Search size={20} />
+        </button>
+
+        <div className="hidden lg:block text-slate-400 text-sm ml-4">
           Welcome back, <span className="text-white font-medium">{admin?.name}</span>
         </div>
       </div>

@@ -14,7 +14,7 @@ exports.triggerBackup = async (req, res) => {
     await ActivityLog.create({
       action: 'BACKUP_CREATED',
       description: `Manual database backup created: ${backupInfo.filename}`,
-      performedBy: req.admin._id,
+      actor: req.admin._id,
       entityType: 'System'
     });
 

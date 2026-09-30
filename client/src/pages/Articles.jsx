@@ -4,20 +4,29 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Plus, Edit2, Trash2, X, Eye, EyeOff, Save, FileText } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Eye, EyeOff, Save, FileText, Code } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const Articles = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState(null);
+  const [previewMode, setPreviewMode] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
+    excerpt: '',
     content: '',
     coverImage: '',
     tags: '',
-    isPublished: false
+    category: '',
+    seoTitle: '',
+    seoDescription: '',
+    status: 'Draft'
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -29,7 +38,7 @@ const Articles = () => {
   const fetchArticles = async () => {
     setLoading(true);
     try {
-      const res = await getArticles();
+      const res = await getArticles({ all: true });
       if (res.data.success) {
         setArticles(res.data.data);
       }
@@ -45,22 +54,31 @@ const Articles = () => {
       setEditingArticle(article);
       setFormData({
         title: article.title,
+        excerpt: article.excerpt || '',
         content: article.content,
         coverImage: article.coverImage || '',
         tags: article.tags ? article.tags.join(', ') : '',
-        isPublished: article.isPublished
+        category: article.category || '',
+        seoTitle: article.seoTitle || '',
+        seoDescription: article.seoDescription || '',
+        status: article.status || 'Draft'
       });
     } else {
       setEditingArticle(null);
       setFormData({
         title: '',
+        excerpt: '',
         content: '',
         coverImage: '',
         tags: '',
-        isPublished: false
+        category: '',
+        seoTitle: '',
+        seoDescription: '',
+        status: 'Draft'
       });
     }
     setError(null);
+    setPreviewMode(false);
     setIsModalOpen(true);
   };
 
@@ -103,7 +121,8 @@ const Articles = () => {
 
   const togglePublish = async (article) => {
     try {
-      await updateArticle(article._id, { isPublished: !article.isPublished });
+      const newStatus = article.status === 'Published' ? 'Draft' : 'Published';
+      await updateArticle(article._id, { status: newStatus });
       await fetchArticles();
     } catch (err) {
       console.error('Failed to toggle publish status', err);
@@ -142,26 +161,26 @@ const Articles = () => {
                   <h3 className="text-lg font-bold text-white line-clamp-2 leading-tight">{article.title}</h3>
                   <button
                     onClick={() => togglePublish(article)}
-                    title={article.isPublished ? 'Unpublish' : 'Publish'}
+                    title={article.status === 'Published' ? 'Unpublish' : 'Publish'}
                     className={`p-1.5 rounded-lg transition-colors flex-shrink-0 ml-2 ${
-                      article.isPublished ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
+                      article.status === 'Published' ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'
                     }`}
                   >
-                    {article.isPublished ? <Eye size={16} /> : <EyeOff size={16} />}
+                    {article.status === 'Published' ? <Eye size={16} /> : <EyeOff size={16} />}
                   </button>
                 </div>
                 
                 <p className="text-sm text-slate-400 line-clamp-3 mb-4 flex-1">
-                  {article.content.substring(0, 150)}...
+                  {(article.content || '').substring(0, 150)}...
                 </p>
 
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {article.tags.slice(0, 3).map((tag, idx) => (
+                  {(article.tags || []).slice(0, 3).map((tag, idx) => (
                     <span key={idx} className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
                       {tag}
                     </span>
                   ))}
-                  {article.tags.length > 3 && (
+                  {(article.tags || []).length > 3 && (
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-500">+{article.tags.length - 3}</span>
                   )}
                 </div>
@@ -231,15 +250,66 @@ const Articles = () => {
                     />
                     
                     <div>
-                      <label className="block text-sm font-medium text-slate-400 mb-2">Content (Markdown/HTML supported)</label>
-                      <textarea
-                        required
-                        rows={15}
-                        value={formData.content}
-                        onChange={e => setFormData({...formData, content: e.target.value})}
-                        className="w-full px-4 py-3 bg-slate-900 border border-slate-700/50 rounded-xl focus:outline-none focus:border-primary text-white resize-y font-mono text-sm leading-relaxed"
-                        placeholder="Write your article here..."
-                      />
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-slate-400">Content (Markdown supported)</label>
+                        <button
+                          type="button"
+                          onClick={() => setPreviewMode(!previewMode)}
+                          className="flex items-center gap-1.5 text-xs px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md transition-colors"
+                        >
+                          {previewMode ? <><Code size={14} /> Edit Markdown</> : <><Eye size={14} /> Preview</>}
+                        </button>
+                      </div>
+                      
+                      {previewMode ? (
+                        <div className="w-full h-[380px] px-4 py-3 bg-slate-900 border border-slate-700/50 rounded-xl overflow-y-auto">
+                          <div className="prose prose-invert prose-sm max-w-none prose-headings:text-white prose-headings:font-bold prose-a:text-primary hover:prose-a:text-primary/80 prose-p:text-slate-300 prose-strong:text-white prose-code:text-primary/80 prose-li:text-slate-300">
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                code({node, inline, className, children, ...props}) {
+                                  const match = /language-(\w+)/.exec(className || '')
+                                  return !inline && match ? (
+                                    <SyntaxHighlighter
+                                      style={vscDarkPlus}
+                                      language={match[1]}
+                                      PreTag="div"
+                                      className="rounded-lg my-4 !bg-[#0d1117] border border-slate-800 text-xs"
+                                      {...props}
+                                    >
+                                      {String(children).replace(/\n$/, '')}
+                                    </SyntaxHighlighter>
+                                  ) : (
+                                    <code className="bg-slate-800 text-primary px-1.5 py-0.5 rounded text-xs font-mono" {...props}>
+                                      {children}
+                                    </code>
+                                  )
+                                },
+                                table({children}) {
+                                  return <div className="overflow-x-auto my-4"><table className="min-w-full text-xs text-left">{children}</table></div>
+                                },
+                                th({children}) {
+                                  return <th className="px-3 py-2 bg-slate-800/50 text-white font-semibold border-b border-slate-700">{children}</th>
+                                },
+                                td({children}) {
+                                  return <td className="px-3 py-2 border-b border-slate-800 text-slate-300">{children}</td>
+                                }
+                              }}
+                            >
+                              {formData.content || '*No content yet...*'}
+                            </ReactMarkdown>
+                          </div>
+                        </div>
+                      ) : (
+                        <textarea
+                          required
+                          rows={15}
+                          value={formData.content}
+                          onChange={e => setFormData({...formData, content: e.target.value})}
+                          className="w-full h-[380px] px-4 py-3 bg-slate-900 border border-slate-700/50 rounded-xl focus:outline-none focus:border-primary text-white resize-y font-mono text-sm leading-relaxed"
+                          placeholder="# Your markdown here..."
+                        />
+                      )}
                     </div>
                   </div>
 
@@ -258,19 +328,43 @@ const Articles = () => {
                       placeholder="React, JavaScript, Tutorial"
                     />
 
+                    <Input 
+                      label="Excerpt" 
+                      value={formData.excerpt}
+                      onChange={e => setFormData({...formData, excerpt: e.target.value})}
+                      placeholder="Short summary..."
+                    />
+
+                    <Input 
+                      label="Category" 
+                      value={formData.category}
+                      onChange={e => setFormData({...formData, category: e.target.value})}
+                      placeholder="e.g. Technology"
+                    />
+
+                    <Input 
+                      label="SEO Title (Optional)" 
+                      value={formData.seoTitle}
+                      onChange={e => setFormData({...formData, seoTitle: e.target.value})}
+                    />
+
+                    <Input 
+                      label="SEO Description (Optional)" 
+                      value={formData.seoDescription}
+                      onChange={e => setFormData({...formData, seoDescription: e.target.value})}
+                    />
+
                     <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.isPublished}
-                          onChange={(e) => setFormData({...formData, isPublished: e.target.checked})}
-                          className="w-5 h-5 rounded border-slate-600 bg-slate-700 text-primary focus:ring-primary focus:ring-offset-slate-800"
-                        />
-                        <div>
-                          <p className="text-white font-medium">Publish Immediately</p>
-                          <p className="text-xs text-slate-400">Make this article visible to the public</p>
-                        </div>
-                      </label>
+                      <label className="block text-sm font-medium text-slate-400 mb-2">Publish Status</label>
+                      <select
+                        value={formData.status}
+                        onChange={(e) => setFormData({...formData, status: e.target.value})}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-white focus:outline-none focus:border-primary"
+                      >
+                        <option value="Draft">Draft</option>
+                        <option value="Published">Published</option>
+                        <option value="Scheduled">Scheduled</option>
+                      </select>
                     </div>
                   </div>
                 </div>
